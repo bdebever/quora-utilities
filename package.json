@@ -1,0 +1,19 @@
+{
+  "name": "scrape-now-cowork",
+  "version": "0.0.1",
+  "description": "Scrape the results of now.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "await-sleep": "0.0.1",
+    "bluebird": "^3.5.4",
+    "dotenv": "^7.0.0",
+    "puppeteer": "^1.14.0",
+    "scrapedin": "^1.0.2",
+    "set-interval-async": "^1.0.23"
+  }
+}
