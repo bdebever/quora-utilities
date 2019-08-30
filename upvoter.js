@@ -11,6 +11,8 @@ process.on('unhandledRejection', console.log.bind(console));
  */
 const { QUORA_EMAIL, QUORA_PASSWORD } = process.env;
 const ROOT = 'https://www.quora.com/';
+const TODAY = new Date();
+const STAMP = TODAY.getTime();
 
 /**
  * Main function
@@ -23,9 +25,10 @@ const ROOT = 'https://www.quora.com/';
  */
 const main = async () => {
     const browser = await puppeteer.launch({
-        headless: false,
-        devtools: true,
-        args: ['--disable-dev-shm-usage']
+      headless: false,
+      devtools: true,
+      ignoreHTTPSErrors: true,
+      //args: ['--disable-dev-shm-usage']
     });
 
     const page = await browser.newPage();
@@ -70,7 +73,7 @@ const main = async () => {
     const results = [];
     let total_counter = 0;
 
-    for (let i = 0; i < profiles.length; i++) {
+    for (let i = profiles.length-1; i >= 0; i--) {
         const profile = profiles[i];
 
         await page.goto(`${ROOT}profile/${profile}/answers`, {waitUntil: 'load'});
@@ -101,11 +104,8 @@ const main = async () => {
             );
 
             if (items.length === 0) {
-                results.push({
-                  profile,
-                  upvotes: 0,
-                  type: "error"
-                });
+                results.push({ profile, type: "error" });
+                console.log("Nothing to upvote on this profile was found");
                 continue;
             }
 
@@ -137,6 +137,7 @@ const main = async () => {
         results.push({
           profile,
           upvotes: counter_profile,
+          latest_upvote: TODAY,
           type: 'success'
         });
 
@@ -145,7 +146,8 @@ const main = async () => {
 
     return {
         type: 'success',
-        message: `Successfully upvoted ${total_counter} for ${profiles.length} profiles`,
+        date: TODAY,
+        message: `Successfully upvoted ${total_counter} posts on ${profiles.length} profiles`,
         results
     };
 }
@@ -192,10 +194,18 @@ const autoScroll = async(page, loop = 0, stopper = 0) => {
                         window.scrollBy(0, distance);
                         totalHeight += distance;
 
-                        await window.sleep(1000);
+                        await new Promise( resolve => window.setTimeout(resolve, 1200));
 
-                        /* console.log('Scroll Height: ' + scrollHeight);
-                        console.log('Total Height: ' + totalHeight); */
+                        // For Quora: temporary solution
+                        // Check if we have an upvoted item=>s don't go further
+                        const upvotedItems = [...document.querySelectorAll(
+                          '.feed_item > div:not(.hidden) .icon_action_bar a[action_click="AnswerRemoveUpvote"]'
+                        )];
+
+                        if (upvotedItems.length > 0 && totalHeight > 2000) resolve();
+
+                        console.log('Scroll Height: ' + scrollHeight);
+                        console.log('Total Height: ' + totalHeight);
 
                         scrollHeight = document.body.scrollHeight;
 
@@ -227,7 +237,7 @@ main().then(value => {
         const data = JSON.stringify(value, null, 2)
         console.log(value);
         // Store in a file
-        return fs.writeFile('results.json', data, (err) => {
+        return fs.writeFile(`./results/${STAMP}_logs.json`, data, (err) => {
             if (err) throw err;
             console.log('Data written to file');
         });
