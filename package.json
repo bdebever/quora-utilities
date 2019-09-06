@@ -11,10 +11,10 @@
   "license": "ISC",
   "dependencies": {
     "await-sleep": "0.0.1",
-    "bluebird": "^3.5.4",
+    "bluebird": "^3.5.5",
     "dotenv": "^7.0.0",
-    "puppeteer": "^1.14.0",
-    "scrapedin": "^1.0.2",
-    "set-interval-async": "^1.0.23"
+    "puppeteer": "^1.19.0",
+    "scrapedin": "^1.0.8",
+    "set-interval-async": "^1.0.29"
   }
 }
